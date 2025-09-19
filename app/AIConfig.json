@@ -1,0 +1,5 @@
+{
+  "available_models": ["gemma-3-27b-it", "gemma-3-12b-it", "gemma-3-4b-it"],
+  "selected_model": "gemma-3-27b-it",
+  "API_key": "environ"
+}
