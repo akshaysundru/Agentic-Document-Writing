@@ -3,10 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from .config import DevelopmentConfig
 import os
+from .ai_handler import ConfigManager
 
 #init
 db = SQLAlchemy()
 migrate = Migrate()
+config_manager = ConfigManager('app/AIConfig.json')
 
 def create_app(config=DevelopmentConfig):
     flaskApp = Flask(__name__)
