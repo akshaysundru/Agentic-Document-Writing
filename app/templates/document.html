@@ -2,82 +2,130 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Markdown Editor</title>
+<title>{{title}}</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
           crossorigin="anonymous">
-<style>
-.editable-section {
-    border:1px solid #ccc;
-    margin:20px 0;
-    padding:12px;
-    border-radius:6px;
-    background:#fafafa;
-    position:relative;
-}
-.editable-section:focus {
-    outline:2px solid #007bff;
-    background:#fff;
-}
-.edit-btn {
-    position:absolute;
-    top:8px;
-    right:8px;
-    padding:4px 8px;
-    border:none;
-    border-radius:4px;
-    background:#007bff;
-    color:white;
-    cursor:pointer;
-}
-</style>
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
-<body>
+<body class="big-blue">
 
 <!-- Render all sections -->
-<div class="container-fluid d-flex">
-    <!-- Left: Original Sections -->
-    <div class="w-75 p-4">
-        {{ sections_html|safe }}
+<div class="container-fluid d-flex align-items-start mt-4">
+    <div class="flex-column w-75 bg p-4">
+        {% for sec in sections %}
+            {% if sec.header and sec.header.strip() %}
+                <div class="editable-section-header" contenteditable="true" data-id="{{ sec.id }}">
+                    {{ sec.header | safe }}
+                </div>
+            {% endif %}
+            {% if sec.content and sec.content.strip() %}
+                <div class="editable-section-content"  data-id="{{ sec.id }}">
+                    <div contenteditable="true">
+                    <p>{{ sec.content | safe }}</p>  
+                    </div> 
+                    <button class="edit-btn bg-primary">Clean</button>
+                </div>
+            {% endif %}
+        {% endfor %}
     </div>
 
-    <!-- Right: Editor Panel -->
-    <div class="w-25 p-3 mt-5 bg-secondary text-white">
+    <div class="w-25 bg-secondary text-white p-4 ms-3">
         <h1><strong>Editor Panel</strong></h1>
         <p>View cleaned HTML here:</p>
         <div id="editor-panel"></div>
     </div>
+
+    
 </div>
 
-<script>
-document.querySelectorAll(".editable-section").forEach(section => {
-    // Create Clean button
-    const btn = document.createElement('button');
-    btn.className = 'edit-btn';
-    btn.innerText = 'Clean';
-    section.prepend(btn);
-
-    btn.addEventListener("click", async () => {
-        const htmlContent = section.innerHTML.replace(btn.outerHTML, ''); // remove button itself
-
-        // Call Flask route for LLM cleanup
-        const response = await fetch('{{ url_for("main.clean_section") }}', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({html: htmlContent})
-        });
-
-        const data = await response.json();
-
-        // Put cleaned HTML in the Editor Panel
-        document.getElementById('editor-panel').innerHTML = data.cleaned_html;
-    });
-});
-</script>
+    <div class="d-flex justify-content-center align-items-center p-4">
+        <button class="btn weird-orange text-white g-3">Export to markdown</button>
+        <button id="saveBtn" class="btn pink-lady text-white g-3">Save All Changes</button>
+    </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
         crossorigin="anonymous"></script>
+
+<script>
+    document.querySelectorAll(".edit-btn").forEach(btn => {
+        btn.addEventListener("click", async function() {
+            const parent = this.parentElement;  // grabs the .editable-section
+            const contentDiv = parent.querySelector("div[contenteditable]");
+            if (!contentDiv) return;
+
+            const htmlContent = contentDiv.innerHTML;
+            const positionAttr = parseInt(parent.getAttribute("data-position"));
+            
+            cleanDict = {
+                "html": htmlContent,
+                "position": positionAttr
+            };
+            console.log(cleanDict);
+
+            try {
+                const response = await fetch("{{ url_for('main.clean_section') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(cleanDict)
+                });
+
+                    const data = await response.json();
+                    if (data.ok) {
+                        console.log("Cleaned HTML returned:", data.cleaned_html);
+                        // Example: display in your editor panel
+                        contentDiv.innerHTML = data.cleaned_html;
+                    } else {
+                        console.error("Server error:", data.error);
+                    }
+                } catch (err) {
+                    console.error("Request failed:", err);
+                }
+        });
+    });
+
+    // Save Function that actually sends the data to the server
+    
+    document.getElementById("saveBtn").addEventListener("click", function() {
+        
+        let updates = [];
+
+        // grab headers
+        document.querySelectorAll(".editable-section-header").forEach(el => {
+            updates.push({
+                id: el.dataset.id,
+                header: el.innerHTML.trim(),
+                content: null
+            });
+        });
+
+        // grab contents
+        document.querySelectorAll(".editable-section-content").forEach(el => {
+            let contentEl = el.querySelector("[contenteditable]");
+            updates.push({
+                id: el.dataset.id,
+                header: null,
+                content: contentEl.innerHTML.trim()
+            });
+        });
+
+        fetch("/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sections: updates })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message || "Saved!");
+        })
+        .catch(err => console.error("Save error:", err));
+    })
+</script>
+
 </body>
 </html>

@@ -5,6 +5,7 @@ from datetime import datetime
 
 class DocumentSection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    document_title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
     header = db.Column(db.String(255))  # store header text if this section is a header
     position = db.Column(db.Integer, nullable=False)  # ordering of sections
