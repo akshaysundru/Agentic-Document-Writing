@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, flash
-from .utils import markdown_to_sections2, upload_markdown_to_db
+from .utils import upload_markdown_to_db
 import markdown
 from .ai_func import AIFunctions
 from .models import DocumentSection
@@ -25,25 +25,25 @@ def document2():
 @main.route("/clean_section", methods=["POST"])
 def clean_section():
     data = request.get_json(silent=False)
-    if not data or "html" not in data or "position" not in data:
-        return jsonify({"ok": False, "error": "No HTML or position received"}), 400
+    if not data or "html" not in data or "id" not in data:
+        return jsonify({"ok": False, "error": "No HTML or id received"}), 400
 
     html = data["html"]
-    position = data.get("position")
-    if position is None:
-        return jsonify({"ok": False, "error": "Position is None"}), 400
+    id = data.get("id")
+    if id is None:
+        return jsonify({"ok": False, "error": "Id is None"}), 400
 
     try:
-        position = int(position)
+        id = int(id)
     except (TypeError, ValueError):
-        return jsonify({"ok": False, "error": "Invalid position"}), 400
+        return jsonify({"ok": False, "error": "Invalid ID"}), 400
 
     # Call your AI clean function
     cleaned_html = ai.clean_text(html)
     print("Cleaned HTML:", cleaned_html)
 
     # Update the DB section and commit
-    section = DocumentSection.query.filter_by(position=position).first()
+    section = DocumentSection.query.filter_by(id=id).first()
     if section:
         section.content = cleaned_html
         db.session.commit()  # <-- ensures changes are saved to DB
@@ -69,5 +69,27 @@ def save_sections():
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Error saving: {e}"}), 500
+    
+@main.route('/suggest_edit', methods=["POST"])
+def suggestions():
+    data = request.get_json(silent=False)
+    if not data or "html" not in data or "id" not in data:
+        return jsonify({"ok": False, "error": "No HTML or id received"}), 400
+
+    html = data["html"]
+    id = data.get("id")
+    if id is None:
+        return jsonify({"ok": False, "error": "Position is None"}), 400
+
+    try:
+        id = int(id)
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "error": "Invalid position"}), 400
+
+    # Call your AI clean function
+    suggested_html = ai.suggest_edits(text=html)
+    print("Suggested Edit:", suggested_html)
+
+    return jsonify({"ok": True, "cleaned_html": suggested_html})
 
 

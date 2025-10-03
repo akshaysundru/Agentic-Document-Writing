@@ -26,7 +26,8 @@
                     <div contenteditable="true">
                     <p>{{ sec.content | safe }}</p>  
                     </div> 
-                    <button class="edit-btn bg-primary">Clean</button>
+                    <button class="btn action-btn bg-primary" data-action="clean">Clean</button>
+                    <button class="btn action-btn eve-green g-3" data-action="suggest">Suggest</button>
                 </div>
             {% endif %}
         {% endfor %}
@@ -36,6 +37,7 @@
         <h1><strong>Editor Panel</strong></h1>
         <p>View cleaned HTML here:</p>
         <div id="editor-panel"></div>
+        <button id="apply-btn" class="btn">Apply Changes</button>
     </div>
 
     
@@ -43,7 +45,7 @@
 
     <div class="d-flex justify-content-center align-items-center p-4">
         <button class="btn weird-orange text-white g-3">Export to markdown</button>
-        <button id="saveBtn" class="btn pink-lady text-white g-3">Save All Changes</button>
+        <button id="saveBtn" class="btn action-btn pink-lady text-white g-3">Save All Changes</button>
     </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
@@ -51,46 +53,109 @@
         crossorigin="anonymous"></script>
 
 <script>
-    document.querySelectorAll(".edit-btn").forEach(btn => {
+    document.querySelectorAll(".action-btn").forEach(btn => {
         btn.addEventListener("click", async function() {
             const parent = this.parentElement;  // grabs the .editable-section
             const contentDiv = parent.querySelector("div[contenteditable]");
             if (!contentDiv) return;
 
-            const htmlContent = contentDiv.innerHTML;
-            const positionAttr = parseInt(parent.getAttribute("data-position"));
-            
-            cleanDict = {
-                "html": htmlContent,
-                "position": positionAttr
-            };
-            console.log(cleanDict);
+            const htmlContent = contentDiv.innerHTML;  //we get the content in the editable panel as a string and its database ID
+            const idAttr = parseInt(parent.getAttribute("data-id"));
 
+            const payload = {
+                html: htmlContent,
+                id: idAttr
+            }; //creates the dict/object that we use to send to the route
+            console.log("Payload sent:", payload);
+
+            let route;
+            if (this.dataset.action === "clean") {
+                route = "{{ url_for('main.clean_section') }}";
+            } else if (this.dataset.action === "suggest") {
+                route = "{{ url_for('main.suggestions') }}";
+            }  //route selection between the cleaning and suggesting function since both work similarly except for prompt used
+
+            //try catch block wrapper just to diagnose errors
             try {
-                const response = await fetch("{{ url_for('main.clean_section') }}", {
+                const response = await fetch(route, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(cleanDict)
-                });
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                }); //feeds the information through the selected route
 
-                    const data = await response.json();
-                    if (data.ok) {
-                        console.log("Cleaned HTML returned:", data.cleaned_html);
-                        // Example: display in your editor panel
-                        contentDiv.innerHTML = data.cleaned_html;
-                    } else {
-                        console.error("Server error:", data.error);
-                    }
-                } catch (err) {
-                    console.error("Request failed:", err);
-                }
+                const data = await response.json(); //response of the route
+                if (!data.ok) {
+                    console.error("Server error:", data.error);
+                    return;
+                } //error raise if data isn't accepted
+
+                if (this.dataset.action === "clean") {
+                    contentDiv.innerHTML = data.cleaned_html; //overwrite panel with grammatical and spatial writeup
+                } else if (this.dataset.action === "suggest") {
+                    document.getElementById("editor-panel").innerHTML = data.cleaned_html;
+                } //suggested data is outputted into the editor panel for review purposes
+
+                // Store metadata so we know which section it belongs to
+                const applyBtn = document.getElementById("apply-btn");
+                applyBtn.dataset.id = idAttr;
+                applyBtn.dataset.html = data.cleaned_html;
+            } catch (err) {
+                console.error("Request failed:", err);
+            }
         });
     });
 
+    document.getElementById("apply-btn").addEventListener("click", async function () {
+        const id = this.dataset.id;
+        const newHtml = this.dataset.html;
+
+        if (!id || !newHtml) {
+            console.error("No suggestion to apply.");
+            return;
+        }
+
+        // 1. Update the UI section (make sure class matches your HTML!)
+        const target = document.querySelector(`.editable-section-content[data-id="${id}"] div[contenteditable]`);
+        if (target) {
+            target.innerHTML = newHtml;
+        } else {
+            console.error("Target section not found for id:", id);
+            return;
+        }
+
+        // 2. Send update to /save
+        const payload = {
+            sections: [
+                {
+                    id: parseInt(id),
+                    header: null,       // unchanged
+                    content: newHtml    // overwrite with suggestion
+                }
+            ]
+        };
+
+        try {
+            const response = await fetch("{{ url_for('main.save_sections') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            console.log("Save response:", data.message || data);
+            alert(data.message || "Changes applied and saved!");
+            
+            // Optional: clear suggestion panel after apply
+            document.getElementById("editor-panel").innerHTML = "";
+            this.dataset.id = "";
+            this.dataset.html = "";
+        } catch (err) {
+            console.error("Save request failed:", err);
+        }
+    });
+
+
     // Save Function that actually sends the data to the server
-    
     document.getElementById("saveBtn").addEventListener("click", function() {
         
         let updates = [];

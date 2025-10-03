@@ -40,10 +40,19 @@
     background-color: #1D2463;
 }
 
+.eve-green {
+    background-color: #0db51b;
+}
+
 .weird-orange {
     background-color: #C4882F;
+    color: white;
 }
 
 .pink-lady {
     background-color: #e9358f;
+}
+
+#apply-btn {
+    background-color: #5b9aa0
 }
