@@ -56,3 +56,15 @@
 #apply-btn {
     background-color: #5b9aa0
 }
+
+.addSection {
+    background-color: #0bd40b;
+}
+
+#addHeader {
+    color: white;
+}
+
+#addContent {
+    color: white;
+}

@@ -1,13 +1,15 @@
 from flask import Blueprint, render_template, request, jsonify, flash
 from .utils import upload_markdown_to_db
 import markdown
-from .ai_func import AIFunctions
+#from .ai_func import AIFunctions
+from .ai_func_llama import AIFunctionsOllamaLocal
 from .models import DocumentSection
 from . import db
 
 main = Blueprint('main', __name__)
 
-ai = AIFunctions()
+#ai = AIFunctions()
+ai2 = AIFunctionsOllamaLocal()
 
 @main.route('/docs')
 def document2():
@@ -39,7 +41,7 @@ def clean_section():
         return jsonify({"ok": False, "error": "Invalid ID"}), 400
 
     # Call your AI clean function
-    cleaned_html = ai.clean_text(html)
+    cleaned_html = ai2.clean_text(html)
     print("Cleaned HTML:", cleaned_html)
 
     # Update the DB section and commit
@@ -87,7 +89,7 @@ def suggestions():
         return jsonify({"ok": False, "error": "Invalid position"}), 400
 
     # Call your AI clean function
-    suggested_html = ai.suggest_edits(text=html)
+    suggested_html = ai2.suggest_edits(text=html)
     print("Suggested Edit:", suggested_html)
 
     return jsonify({"ok": True, "cleaned_html": suggested_html})

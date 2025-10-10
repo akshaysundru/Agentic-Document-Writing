@@ -31,7 +31,7 @@ def markdown_to_sections2(md_text):
     current_section = None
 
     for node in soup.contents:
-        if node.name in header_tags:
+        if node.name in header_tags: # type: ignore
             if current_section:
                 sections.append(current_section)
             current_section = {"header": str(node), "content": ""}
@@ -65,12 +65,7 @@ def upload_markdown_to_db(file_path):
 
     # Push sections to DB
     for idx, sec in enumerate(sections):
-        section_record = DocumentSection(
-            document_title=document_title,
-            position=idx,
-            header=sec.get("header", ""),
-            content=sec.get("content", "")
-        )
+        section_record = DocumentSection(document_title=document_title, position=idx,header=sec.get("header", ""), content=sec.get("content", "")) # type: ignore
         db.session.add(section_record)
 
     db.session.commit()

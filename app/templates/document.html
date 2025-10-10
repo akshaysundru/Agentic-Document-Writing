@@ -46,6 +46,8 @@
     <div class="d-flex justify-content-center align-items-center p-4">
         <button class="btn weird-orange text-white g-3">Export to markdown</button>
         <button id="saveBtn" class="btn action-btn pink-lady text-white g-3">Save All Changes</button>
+        <button id="addHeader" class="btn addSection g-3">Add Header</button>
+        <button id="addContent" class="btn addSection g-3">Add content</button>
     </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
@@ -190,6 +192,55 @@
         })
         .catch(err => console.error("Save error:", err));
     })
+
+    document.querySelectorAll(".addSection").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const container = document.querySelector(".container-fluid .w-75"); // main content column
+            const type = btn.id === "addHeader" ? "header" : "content"; // decide what to add
+
+            // create a new section wrapper
+            const newSection = document.createElement("div");
+            newSection.dataset.id = "new-" + Date.now(); // temporary unique ID
+            newSection.classList.add("mt-3", "p-3", "border", "rounded");
+
+            if (type === "header") {
+                newSection.classList.add("editable-section-header");
+                newSection.setAttribute("contenteditable", "true");
+                newSection.innerHTML = "<h3>New Header</h3>";
+            } else if (type === "content") {
+                newSection.classList.add("editable-section-content");
+
+                // content editable div
+                const contentDiv = document.createElement("div");
+                contentDiv.setAttribute("contenteditable", "true");
+                contentDiv.innerHTML = "<p>New section content...</p>";
+
+                // clean + suggest buttons
+                const cleanBtn = document.createElement("button");
+                cleanBtn.classList.add("btn", "action-btn", "bg-primary", "me-2");
+                cleanBtn.dataset.action = "clean";
+                cleanBtn.textContent = "Clean";
+
+                const suggestBtn = document.createElement("button");
+                suggestBtn.classList.add("btn", "action-btn", "eve-green");
+                suggestBtn.dataset.action = "suggest";
+                suggestBtn.textContent = "Suggest";
+
+                newSection.appendChild(contentDiv);
+                newSection.appendChild(cleanBtn);
+                newSection.appendChild(suggestBtn);
+            }
+
+            // append to container
+            container.appendChild(newSection);
+
+            // focus immediately for convenience
+            newSection.focus();
+            console.log("✅ New section added:", type);
+        });
+    });
+
+
 </script>
 
 </body>

@@ -9,7 +9,7 @@ client = Client(host=NGROK_URL)
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     """Extract all text from a PDF using PyMuPDF."""
-    doc = fitz.open(pdf_path)
+    doc = fitz.open(pdf_path) # type: ignore
     text = ""
     for page in doc:
         text += page.get_text("text") + "\n"
