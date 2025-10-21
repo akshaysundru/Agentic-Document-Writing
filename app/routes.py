@@ -94,4 +94,13 @@ def suggestions():
 
     return jsonify({"ok": True, "cleaned_html": suggested_html})
 
+@main.route('/content')
+def content_generator_page():
+    return render_template('content_generator.html')
 
+@main.route('/content_generation', methods=['POST'])
+def generating_content():
+    data = request.get_json()
+    text = data.get('prompt', '')
+    result = ai2.api_call(text)
+    return jsonify({'output': result})

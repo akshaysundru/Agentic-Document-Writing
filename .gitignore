@@ -1,2 +1,7 @@
 .venv/
 migrations/
+app/confidential_documents/
+local_models/
+app/rag_tools/
+faiss_index/
+app/cache/

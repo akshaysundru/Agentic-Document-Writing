@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<head>
+    <title>Content Generation</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
+        crossorigin="anonymous">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</head>
+
+<body class="big-blue">
+
+    <div class="editable-section-content container-fluid d-flex align-items-start mt-4">
+        <div contenteditable="true" id="input-box" class="p-3 border rounded bg-white w-100 shadow-sm">
+            <p>This is a textbox</p>
+        </div>
+    </div>
+
+    <!-- View Panel -->
+    <div class="container-fluid mt-4">
+        <div id="view-panel" class="p-3 border rounded bg-light shadow-sm" style="min-height: 100px;">
+            <p class="text-muted">Generated content will appear here...</p>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-3">
+        <button class="btn btn-warning api-call"><i class="bi bi-lightning-charge"></i> Click to generate content</button>
+    </div>
+
+    <script>
+    document.querySelector('.api-call').addEventListener('click', async () => {
+    const input = document.getElementById('input-box').innerText;
+    const viewPanel = document.getElementById('view-panel');
+
+    viewPanel.innerHTML = '<p><em>Generating content...</em></p>';
+
+    try {
+        const response = await fetch('/content_generat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: input })
+        });
+
+        const data = await response.json();
+        viewPanel.innerHTML = data.output || '<p><em>No output returned.</em></p>';
+    } catch (error) {
+        viewPanel.innerHTML = `<p class="text-danger"><strong>Error:</strong> ${error}</p>`;
+    }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
+
+
+</body>
+</html>
