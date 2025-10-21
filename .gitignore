@@ -5,3 +5,4 @@ local_models/
 app/rag_tools/
 faiss_index/
 app/cache/
+*.db
