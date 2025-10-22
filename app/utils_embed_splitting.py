@@ -1,6 +1,6 @@
 import os
 import json
-from constants import PDF_DIR, SPLITS_CACHE_PATH, EMBEDDING_MODEL_PATH, DOCUMENTS_SPLITTED_PATH
+from .constants import PDF_DIR, SPLITS_CACHE_PATH, EMBEDDING_MODEL_PATH, DOCUMENTS_SPLITTED_PATH
 import torch
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -81,6 +81,7 @@ def create_splits(documents):
 
 
 if __name__ == "__main__":
+    print(device)
     embedding = embeddings(EMBEDDING_MODEL_PATH)
     print(embedding)
     documents = load_docs()

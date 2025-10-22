@@ -4,8 +4,8 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
 from langchain_community.retrievers import BM25Retriever
 from langchain.retrievers import EnsembleRetriever
-from constants import PDF_DIR, FAISS_INDEX_PATH, EMBEDDING_MODEL_PATH, BM25_CACHE_PATH
-from app.utils_embed_splitting import load_docs, create_splits, embeddings
+from .constants import PDF_DIR, FAISS_INDEX_PATH, EMBEDDING_MODEL_PATH, BM25_CACHE_PATH
+from .utils_embed_splitting import load_docs, create_splits, embeddings
 import pickle
 
 def build_vector_store(embeddings, splits):
@@ -77,7 +77,7 @@ def get_retrievers(pdf_folder=PDF_DIR, k=4):
         weights=[0.5, 0.5]
     )
 
-    return ensemble_retriever, semantic_retriever, bm25_retriever
+    return ensemble_retriever
 
 if __name__ == "__main__":
     ensemble_retriever, semantic_retriever, bm25_retriever = get_retrievers()

@@ -29,34 +29,14 @@
 
     <div class="container-fluid mt-3">
         <button class="btn btn-warning api-call"><i class="bi bi-lightning-charge"></i> Click to generate content</button>
+        <button class="btn btn-light" id="export-btn"><i class="bi bi-file-earmark-word-fill"></i> Export to Word</button>
     </div>
 
-    <script>
-    document.querySelector('.api-call').addEventListener('click', async () => {
-    const input = document.getElementById('input-box').innerText;
-    const viewPanel = document.getElementById('view-panel');
-
-    viewPanel.innerHTML = '<p><em>Generating content...</em></p>';
-
-    try {
-        const response = await fetch('/content_generat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: input })
-        });
-
-        const data = await response.json();
-        viewPanel.innerHTML = data.output || '<p><em>No output returned.</em></p>';
-    } catch (error) {
-        viewPanel.innerHTML = `<p class="text-danger"><strong>Error:</strong> ${error}</p>`;
-    }
-    });
-</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
         crossorigin="anonymous"></script>
 
-
+<script src="{{ url_for('static', filename='content_generator.js') }}"></script>
 </body>
 </html>
