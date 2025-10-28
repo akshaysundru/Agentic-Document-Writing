@@ -53,3 +53,7 @@ def export_word():
         download_name="generated_content.docx",
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
+@main.route('/writer')
+def writer_page():
+    return render_template('document_editor.html')

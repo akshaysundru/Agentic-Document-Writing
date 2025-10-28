@@ -5,7 +5,7 @@ from .utils_vectorstore_retrievers import get_retrievers
 
 class AIFunctionsOllamaLocal:
     def __init__(self):
-        self.model = OllamaLLM(model="qwen3:30b")
+        self.model = OllamaLLM(model="llama3.2") #qwen3:30b is selected model when having access to GPU 
         self.error = None
         self.retriever = get_retrievers()
         

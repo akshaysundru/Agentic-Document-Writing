@@ -10,10 +10,11 @@
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
 </head>
 
 <body class="big-blue">
-
+<div class="container-fluid mb-5">
     <div class="editable-section-content container-fluid d-flex align-items-start mt-4">
         <div contenteditable="true" id="input-box" class="p-3 border rounded bg-white w-100 shadow-sm">
             <p>This is a textbox</p>
@@ -29,14 +30,48 @@
 
     <div class="container-fluid mt-3">
         <button class="btn btn-warning api-call"><i class="bi bi-lightning-charge"></i> Click to generate content</button>
-        <button class="btn btn-light" id="export-btn"><i class="bi bi-file-earmark-word-fill"></i> Export to Word</button>
+    </div>
+</div>
+
+    <!-- Editor container -->
+    <div id="editor" class="container-fluid bg-light">
+        <p>Hello World!</p>
+        <p>Some initial <strong>bold</strong> text</p>
+        <p><br /></p>
     </div>
 
+    <div class="container-fluid mt-3">
+        <button class="btn btn-light" id="export-btn"><i class="bi bi-file-earmark-word-fill"></i> Export to Word</button>
+    </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
         crossorigin="anonymous"></script>
 
+        <!-- Quill library -->
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+
+<!-- Initialize Quill editor -->
+<script>
+
+    var toolbarOptions = [
+        [{ font: ['sans-serif', 'serif', 'monospace', 'Arial', 'Times New Roman', 'Courier New'] }],
+        [{ size: ['small', false, 'large', 'huge'] }],
+        ['bold', 'italic', 'underline'],
+        [{ color: [] }, { background: [] }],
+        [{ list: 'ordered'}, { list: 'bullet' }],
+        ['clean']
+        ];
+
+    const quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {toolbar: toolbarOptions}
+    });
+
+</script>
+
 <script src="{{ url_for('static', filename='content_generator.js') }}"></script>
+
+
 </body>
 </html>
