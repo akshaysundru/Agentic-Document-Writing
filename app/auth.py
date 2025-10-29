@@ -41,7 +41,7 @@ def login():
             # Successful login
             login_user(userDB, remember=form.remember_me.data)
             flash("Logged in successfully!", "success")
-            return redirect("/content")
+            return redirect("/dashboard")
 
     return render_template('login.html', title='Sign In', form=form)
 

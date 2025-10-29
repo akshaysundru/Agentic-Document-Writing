@@ -1,11 +1,13 @@
-from flask import Blueprint, render_template, request, jsonify, send_file
+from flask import Blueprint, render_template, request, jsonify, send_file, redirect, url_for, flash
+from flask_login import login_required, current_user
 from io import BytesIO
 import markdown
 #from .ai_func import AIFunctions
 from .ai_func_rag import AIFunctionsOllamaLocal
 from .models import DocumentSection
 from . import db
-from .utils import html_to_docx
+from .utils import html_to_docx, markdown_to_sections
+from flask import session
 
 main = Blueprint('main', __name__)
 
@@ -13,6 +15,7 @@ main = Blueprint('main', __name__)
 ai = AIFunctionsOllamaLocal()
 
 @main.route('/content')
+@login_required
 def content_generator_page():
     return render_template('content_generator.html')
 
@@ -53,6 +56,28 @@ def export_word():
         download_name="generated_content.docx",
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
+@main.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
+
+
+@main.route('/markdown_view', methods=['GET', 'POST'])
+@login_required
+def markdown_view():
+    sections = []
+    if request.method == 'POST':
+        uploaded_file = request.files.get('file')
+        if uploaded_file and uploaded_file.filename.endswith('.md'): # type: ignore
+            md_text = uploaded_file.read().decode('utf-8')
+            sections = markdown_to_sections(md_text)
+        else:
+            flash('Please upload a valid Markdown (.md) file', 'danger')
+            return redirect(url_for('main.markdown_view'))
+
+    return render_template('markdown_view.html', sections=sections)
+
 
 @main.route('/base')
 def base():

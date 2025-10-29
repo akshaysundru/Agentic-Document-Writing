@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup, Tag
 import pymupdf4llm as pdf
 import pathlib
 from .constants import MARKDOWN_PATH, PDF_DIR
+import markdown
 
 def html_to_docx(html_content: str) -> BytesIO:
     """
@@ -56,6 +57,34 @@ def pdf_to_markdown(directory):
         converted_files.append(str(output_file))
 
     return converted_files
+
+def markdown_to_sections(md_text: str):
+    html_body = markdown.markdown(md_text, extensions=['tables', 'fenced_code'])
+    soup = BeautifulSoup(html_body, "html.parser")
+
+    sections = []
+    current_section = None
+
+    for node in soup.children:
+        if isinstance(node, str):
+            continue  # skip plain text
+        if node.name and node.name.startswith('h') and node.name[1].isdigit(): # type: ignore
+            # Save previous section
+            if current_section:
+                sections.append(current_section)
+            # Start new section (include header in content)
+            current_section = {"content": str(node)}
+        else:
+            if current_section:
+                current_section["content"] += str(node)
+            else:
+                current_section = {"content": str(node)}
+
+    if current_section:
+        sections.append(current_section)
+
+    return sections
+
 
 if __name__ == "__main__":
     pdf_to_markdown(directory=PDF_DIR)

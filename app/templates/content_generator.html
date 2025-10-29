@@ -31,18 +31,20 @@
     </div>
 </div>
 
-<!-- Editor container -->
-<div id="editor" class="container-fluid bg-light mt-4 p-3 rounded shadow-sm">
-    <p>Hello World!</p>
-    <p>Some initial <strong>bold</strong> text</p>
-    <p><br /></p>
-</div>
+<div class="container-fluid mb-5">
 
-<!-- Export Button -->
-<div class="mt-3">
-    <button class="btn btn-light" id="export-btn">
-        <i class="bi bi-file-earmark-word-fill"></i> Export to Word
-    </button>
+    <!-- Editor container -->
+    <div id="editor" class="container-fluid bg-light mt-4 p-3 rounded shadow-sm">
+        <!-- If content exists in session, load it -->
+        {{ loaded_content|safe }}
+    </div>
+
+    <!-- Export Button -->
+    <div class="container-fluid mt-3">
+        <button class="btn btn-light" id="export-btn">
+            <i class="bi bi-file-earmark-word-fill"></i> Export to Word
+        </button>
+    </div>
 </div>
 {% endblock %}
 

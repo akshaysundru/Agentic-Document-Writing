@@ -9,7 +9,7 @@ import os
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
-login_manager.login_view = "auth.login_page"  # Redirect here if login required
+login_manager.login_view = "auth.login_page"  # type: ignore # Redirect here if login required
 
 def create_app(config=DevelopmentConfig):
     flaskApp = Flask(__name__)

@@ -1,0 +1,23 @@
+{% extends "base_navbar.html" %}
+
+{% block title %}Markdown Viewer{% endblock %}
+
+{% block content %}
+<div class="container-fluid mb-5">
+    {% for section in sections %}
+        <div class="editable-section mb-4">
+            <div contenteditable="true" class="p-3 border rounded bg-white shadow-sm section-content">
+                {{ section.content|safe }}
+            </div>
+        </div>
+    {% else %}
+        <p class="text-muted">Upload a Markdown file to view sections.</p>
+    {% endfor %}
+
+    <div class="mt-3">
+        <button class="btn btn-light" id="export-btn">
+            <i class="bi bi-file-earmark-word-fill"></i> Export All Sections
+        </button>
+    </div>
+</div>
+{% endblock %}
