@@ -4,18 +4,42 @@ from io import BytesIO
 import markdown
 from .ai_func_rag import AIFunctionsOllamaLocal
 from . import db
+from .models import Documents, User
 from .utils import html_to_docx, markdown_to_sections
 from flask import session
 
 main = Blueprint('main', __name__)
 
-#ai = AIFunctions()
 ai = AIFunctionsOllamaLocal()
 
-@main.route('/content')
+@main.route('/content/<int:doc_id>')
 @login_required
-def content_generator_page():
-    return render_template('content_generator.html')
+def content_generator_page(doc_id):
+    document = Documents.query.get_or_404(doc_id)
+    return render_template('content_generator.html', document=document, loaded_content=document.content)
+
+
+@main.route('/new_document', methods=['POST'])
+@login_required
+def new_document():
+    doc_name = request.form.get('document_name')
+    if not doc_name:
+        flash("Please provide a document name", "warning")
+        return redirect(url_for('main.dashboard'))  # or wherever your dashboard is
+
+    existing_doc = Documents.query.filter_by(document_name=doc_name).first()
+    if existing_doc:
+        flash("Document already exists. Opening it.", "info")
+        document_id = existing_doc.id
+    else:
+        new_doc = Documents(document_name=doc_name)
+        db.session.add(new_doc)
+        db.session.commit()
+        document_id = new_doc.id
+        flash("New document created successfully!", "success")
+
+    return redirect(url_for('main.content_generator_page', doc_id=document_id))
+
 
 @main.route('/content_generation', methods=['POST'])
 def generating_content():
@@ -37,6 +61,17 @@ def generating_content():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+    
+@main.route('/content/<int:document_id>/save', methods=['POST']) 
+@login_required 
+def save_document(document_id): 
+    data = request.get_json() 
+    content = data.get("content", "") 
+    document = Documents.query.get_or_404(document_id) 
+    document.content = content 
+    db.session.commit()
+    return {"status": "success"}, 200
+
 
 @main.route('/export_word', methods=['POST'])
 def export_word():

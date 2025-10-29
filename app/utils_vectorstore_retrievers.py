@@ -7,17 +7,25 @@ from langchain.retrievers import EnsembleRetriever
 from .constants import PDF_DIR, FAISS_INDEX_PATH, EMBEDDING_MODEL_PATH, BM25_CACHE_PATH
 from .utils_embed_splitting import load_docs, create_splits, embeddings
 import pickle
+import torch
+
 
 def build_vector_store(embeddings, splits):
+    # Check whether GPU is available
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Building FAISS index on {device.upper()}")
+
     dim = len(embeddings.embed_query("test sentence"))
 
-    # Create FAISS CPU index first
+    # --- Create base FAISS index ---
     cpu_index = faiss.IndexFlatL2(dim)
 
-    # Move FAISS index to GPU
-    gpu_res = faiss.StandardGpuResources()
-    gpu_index = faiss.index_cpu_to_gpu(gpu_res, 0, cpu_index)
+    # If GPU available, create GPU resources once
+    gpu_res = None
+    if device == "cuda":
+        gpu_res = faiss.StandardGpuResources()
 
+    # Load existing FAISS index if available
     if os.path.exists(FAISS_INDEX_PATH):
         print("Loading FAISS index from disk...")
         vector_store = FAISS.load_local(
@@ -25,22 +33,27 @@ def build_vector_store(embeddings, splits):
             embeddings=embeddings,
             allow_dangerous_deserialization=True
         )
-        # Move FAISS index back to GPU
-        vector_store.index = faiss.index_cpu_to_gpu(gpu_res, 0, vector_store.index)
+
+        # Move FAISS index to GPU if applicable
+        if device == "cuda":
+            vector_store.index = faiss.index_cpu_to_gpu(gpu_res, 0, vector_store.index)
+
     else:
         print("Building FAISS index from scratch...")
+        # Use GPU or CPU based on availability
+        index = faiss.index_cpu_to_gpu(gpu_res, 0, cpu_index) if device == "cuda" else cpu_index
+
         vector_store = FAISS(
             embedding_function=embeddings,
-            index=gpu_index,
+            index=index,
             docstore=InMemoryDocstore(),
             index_to_docstore_id={},
         )
         vector_store.add_documents(splits)
 
-        # Convert GPU index back to CPU before saving
-        cpu_index_to_save = faiss.index_gpu_to_cpu(vector_store.index)
-        vector_store.index = cpu_index_to_save
-
+        # Before saving, always convert back to CPU for portability
+        if device == "cuda":
+            vector_store.index = faiss.index_gpu_to_cpu(vector_store.index)
         vector_store.save_local(FAISS_INDEX_PATH)
 
     return vector_store
@@ -80,7 +93,5 @@ def get_retrievers(pdf_folder=PDF_DIR, k=4):
     return ensemble_retriever
 
 if __name__ == "__main__":
-    ensemble_retriever, semantic_retriever, bm25_retriever = get_retrievers()
+    ensemble_retriever = get_retrievers()
     print(ensemble_retriever)
-    print(semantic_retriever)
-    print(bm25_retriever)

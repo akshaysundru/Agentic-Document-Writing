@@ -7,7 +7,11 @@
 
 {% block content %}
     <div class="container-fluid d-flex min-vh-100 flex-column justify-content-center align-items-center">
-        <a class="btn mt-2 btn-warning mb-5" href="{{ url_for('main.content_generator_page') }}">New Page Editor</a>
+        <form action="{{ url_for('main.new_document') }}" method="post" class="d-flex flex-column align-items-center">
+            <input type="text" name="document_name" placeholder="Enter document name" class="form-control mb-2" required>
+            <button type="submit" class="btn btn-warning mb-5">New Page Editor</button>
+        </form>
+
         
         <form action="{{ url_for('main.markdown_view') }}" method="post" enctype="multipart/form-data" class="d-flex flex-column align-items-center">
             <input type="file" name="file" accept=".md" class="form-control mb-2" required>

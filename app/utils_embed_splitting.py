@@ -6,39 +6,42 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 import pickle
-from concurrent.futures import ProcessPoolExecutor
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-def load_docs(folder = PDF_DIR):
-    
+def load_docs(folder=PDF_DIR):
+    """Return all PDF file paths in a folder recursively."""
     document_loader = []
-
     for root, dirs, files in os.walk(folder):
         for file in files:
             full_path = os.path.abspath(os.path.join(root, file))
             document_loader.append(full_path)
-
     return document_loader
 
 
 def split_single_document(document):
-    
+    """Split a single document into text chunks."""
     loader = PyMuPDFLoader(document)
     doc = loader.load()
 
     text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-        chunk_size = 512,
-        chunk_overlap = 64,
+        chunk_size=512,
+        chunk_overlap=64,
     )
-
     return text_splitter.split_documents(doc)
 
+
 def embeddings(embedding_model):
-    embeddings = HuggingFaceEmbeddings(model = embedding_model, model_kwargs= {'device': device}, encode_kwargs={'normalize_embeddings': True})
-    return embeddings
+    """Return HuggingFace embeddings object for the given model."""
+    return HuggingFaceEmbeddings(
+        model=embedding_model,
+        model_kwargs={'device': device},
+        encode_kwargs={'normalize_embeddings': True}
+    )
+
 
 def create_splits(documents):
+    """Split all new documents into chunks and return the full list of splits."""
     # Load previously processed file list
     if os.path.exists(DOCUMENTS_SPLITTED_PATH):
         with open(DOCUMENTS_SPLITTED_PATH, "r", encoding="utf-8") as f:
@@ -60,9 +63,10 @@ def create_splits(documents):
 
     if new_docs:
         print(f"Processing {len(new_docs)} new document(s)...")
-        with ProcessPoolExecutor() as executor:
-            results = list(executor.map(split_single_document, new_docs))
-        new_splits = [chunk for doc_splits in results for chunk in doc_splits]
+        new_splits = []
+        for doc_path in new_docs:
+            doc_splits = split_single_document(doc_path)
+            new_splits.extend(doc_splits)
 
         # Merge and save updated splits
         all_splits = cached_splits + new_splits
@@ -81,11 +85,9 @@ def create_splits(documents):
 
 
 if __name__ == "__main__":
-    print(device)
+    print("Device:", device)
     embedding = embeddings(EMBEDDING_MODEL_PATH)
-    print(embedding)
+    print("Embedding model loaded:", embedding)
     documents = load_docs()
     splits = create_splits(documents)
-    print(len(splits))
-    
-
+    print(f"Total splits: {len(splits)}")
