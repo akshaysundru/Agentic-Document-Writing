@@ -6,3 +6,5 @@ app/rag_tools/
 faiss_index/
 app/cache/
 *.db
+.vscode/
+markdown_documents/

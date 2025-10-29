@@ -11,3 +11,11 @@ class DocumentSection(db.Model):
     position = db.Column(db.Integer, nullable=False)  # ordering of sections
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
+
+class User(UserMixin, db.Model):
+
+    __tablename__ = "user"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), nullable=False, unique=True)
+    password_hash = db.Column(db.String(256), nullable=False)

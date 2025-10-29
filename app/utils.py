@@ -3,6 +3,9 @@ from docx import Document
 from docx.shared import Pt
 from flask import send_file
 from bs4 import BeautifulSoup, Tag
+import pymupdf4llm as pdf
+import pathlib
+from .constants import MARKDOWN_PATH, PDF_DIR
 
 def html_to_docx(html_content: str) -> BytesIO:
     """
@@ -38,3 +41,21 @@ def html_to_docx(html_content: str) -> BytesIO:
     doc.save(file_stream)
     file_stream.seek(0)
     return file_stream
+
+def pdf_to_markdown(directory):
+    directory = pathlib.Path(directory)
+    pathlib.Path(MARKDOWN_PATH).mkdir(exist_ok=True)
+
+    converted_files = []
+
+    # Loop over all PDF files in the directory
+    for file_path in directory.glob("*.pdf"):
+        md_text = pdf.to_markdown(str(file_path))  # convert PDF to markdown
+        output_file = pathlib.Path(MARKDOWN_PATH) / f"{file_path.stem}.md"
+        output_file.write_text(md_text, encoding="utf-8")
+        converted_files.append(str(output_file))
+
+    return converted_files
+
+if __name__ == "__main__":
+    pdf_to_markdown(directory=PDF_DIR)

@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Export to Word
     document.getElementById('export-btn').addEventListener('click', async () => {
-        const viewPanel = document.getElementById('view-panel');
+        const viewPanel = document.getElementById('editor');
         const htmlContent = viewPanel.innerHTML;
 
         try {

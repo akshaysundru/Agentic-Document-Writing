@@ -9,6 +9,7 @@ EMBEDDING_MODEL_PATH = os.path.join(PROJECT_ROOT, "local_models/all-MiniLM-L6-v2
 FAISS_INDEX_PATH = os.path.join(PROJECT_ROOT, "faiss_index")
 BM25_CACHE_PATH = os.path.join(PROJECT_ROOT, "app", "cache", "bm25_cache.pkl")
 DOCUMENTS_SPLITTED_PATH = os.path.join(PROJECT_ROOT, "app", "cache", "processed_docs.json")
+MARKDOWN_PATH = os.path.join(PROJECT_ROOT, "app", "markdown_documents")
 
 MODEL_NAME = "llama3.2"
 llm = OllamaLLM(model = MODEL_NAME)

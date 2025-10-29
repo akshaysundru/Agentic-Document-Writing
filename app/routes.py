@@ -53,3 +53,7 @@ def export_word():
         download_name="generated_content.docx",
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
+@main.route('/base')
+def base():
+    return render_template('base_navbar.html')
