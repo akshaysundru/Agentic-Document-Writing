@@ -2,9 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, send_file, redir
 from flask_login import login_required, current_user
 from io import BytesIO
 import markdown
-#from .ai_func import AIFunctions
 from .ai_func_rag import AIFunctionsOllamaLocal
-from .models import DocumentSection
 from . import db
 from .utils import html_to_docx, markdown_to_sections
 from flask import session
