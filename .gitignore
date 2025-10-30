@@ -8,3 +8,4 @@ app/cache/
 *.db
 .vscode/
 markdown_documents/
+__pycache__
