@@ -1,23 +1,49 @@
 {% extends "base_navbar.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}{{ current_user.username }}'s Dashboard{% endblock %}
 
-{% block extra_css %}
-{% endblock %}
+{% block extra_css %}{% endblock %}
 
 {% block content %}
-    <div class="container-fluid d-flex min-vh-100 flex-column justify-content-center align-items-center">
-        <form action="{{ url_for('main.new_document') }}" method="post" class="d-flex flex-column align-items-center">
-            <input type="text" name="document_name" placeholder="Enter document name" class="form-control mb-2" required>
-            <button type="submit" class="btn btn-warning mb-5">New Page Editor</button>
-        </form>
+<div class="container mt-5">
 
-        
-        <form action="{{ url_for('main.markdown_view') }}" method="post" enctype="multipart/form-data" class="d-flex flex-column align-items-center">
-            <input type="file" name="file" accept=".md" class="form-control mb-2" required>
-            <button type="submit" class="btn btn-primary">Load Markdown</button>
+    <h3 class="mb-4 text-center">{{ current_user.username }}'s Documents</h3>
+
+    <!-- User Documents Panel -->
+    <div class="mb-5">
+        {% if user_docs %}
+            <ul class="list-group shadow-sm mx-auto" style="max-width: 700px;">
+                {% for doc in user_docs %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center rounded">
+                        <a href="{{ url_for('main.content_generator_page', doc_id=doc.id) }}" class="text-decoration-none fw-medium text-primary">
+                            {{ doc.document_name }}
+                        </a>
+                        <small class="text-muted">{{ doc.date_created.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted text-center">You have not created any documents yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- New Document Form -->
+    <div class="mx-auto mb-4" style="max-width: 500px;">
+        <form action="{{ url_for('main.new_document') }}" method="post" class="d-flex flex-column gap-2">
+            <input type="text" name="document_name" placeholder="Enter document name" class="form-control" required>
+            <button type="submit" class="btn btn-warning w-100">Create New Document</button>
         </form>
     </div>
+
+    <!-- Load Markdown Form -->
+    <div class="mx-auto mb-5" style="max-width: 500px;">
+        <form action="{{ url_for('main.markdown_view') }}" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-2">
+            <input type="file" name="file" accept=".md" class="form-control" required>
+            <button type="submit" class="btn btn-primary w-100">Load Markdown File</button>
+        </form>
+    </div>
+
+</div>
 {% endblock %}
 
 {% block extra_js %}{% endblock %}

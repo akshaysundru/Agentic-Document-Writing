@@ -42,9 +42,6 @@
 
     <!-- Export & Save Buttons -->
     <div class="mt-3 d-flex gap-2">
-        <button class="btn btn-light" id="export-btn">
-            <i class="bi bi-file-earmark-word-fill"></i> Export to Word
-        </button>
 
         <button class="btn btn-light" id="save-btn" onclick="saveDocument()">
             <i class="bi bi-floppy"></i> Save
@@ -73,5 +70,8 @@ async function saveDocument() {
     }) 
     .catch(err => console.error('Save error:', err)); 
     } 
+
     </script>
+
+    <script src="{{ url_for('static', filename='content_generator.js') }}"></script>
 {% endblock %}

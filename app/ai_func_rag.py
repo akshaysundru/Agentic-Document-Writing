@@ -13,11 +13,11 @@ class AIFunctionsOllamaLocal:
         """Invoking the retriever based on the user question to return the most relevant information."""
         return self.retriever.invoke(text)
     
-    def _generate(self, text: str, prompt_template: str):
+    def _generate(self, text: str, relevant_info: str, prompt_template: str):
         try:
             prompt = PromptTemplate.from_template(prompt_template)
             chain = prompt | self.model
-            response = chain.invoke({"text": text})
+            response = chain.invoke({"text": text, "relevant_info": relevant_info})
             return response
         except Exception as e:
             return f"ERROR during generation: {e}"
@@ -41,7 +41,7 @@ class AIFunctionsOllamaLocal:
             else:
                 relevant_info = "\n\n".join([doc.page_content for doc in retrieved_docs])
 
-            content_generation = f"""
+            content_generation = """
             You are an AI assistant with access to a set of retrieved documents.
             
             Context from retrieved documents:
@@ -56,7 +56,7 @@ class AIFunctionsOllamaLocal:
             Return only the final rewritten text, formatted with <br> tags where a new paragraph should start.
             """
 
-            return self._generate(text=text, prompt_template=content_generation)
+            return self._generate(text=text, relevant_info=relevant_info, prompt_template=content_generation)
 
         except Exception as e:
             return f"ERROR during api_call: {e}"

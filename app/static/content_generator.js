@@ -19,33 +19,5 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Export to Word
-    document.getElementById('export-btn').addEventListener('click', async () => {
-        const viewPanel = document.getElementById('editor');
-        const htmlContent = viewPanel.innerHTML;
-
-        try {
-            const response = await fetch('/export_word', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: htmlContent })
-            });
-
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'generated_content.docx';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-
-        } catch (err) {
-            console.error('Export failed:', err);
-            alert('Failed to export content to Word.');
-        }
-    });
+    
 });
